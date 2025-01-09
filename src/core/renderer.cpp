@@ -4,7 +4,6 @@
 #include <algorithm>
 #include "mathutil.hpp"
 #include <iostream>
-#include "fragment.hpp"
 #include "GLFW/glfw3.h"
 #include <omp.h>
 

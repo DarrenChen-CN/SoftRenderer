@@ -5,7 +5,6 @@
 #include "model.hpp"
 #include "triangle.hpp"
 #include "shader.hpp"
-#include "fragment.hpp"
 #include "scene.hpp"
 #include "bvh.hpp"
 
