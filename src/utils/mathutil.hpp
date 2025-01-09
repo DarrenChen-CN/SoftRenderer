@@ -15,3 +15,6 @@ Mat4f GetViewMatrix(Vec3f pos, Vec3f lookat, Vec3f up);
 Mat4f GetOrthoMatrix(float l, float r, float b, float t, float f, float n);
 Mat4f GetPerspMatrix(float fovy, float aspect, float z_near, float z_far);
 
+Vec3f Min(const Vec3f &v1, const Vec3f &v2);
+Vec3f Max(const Vec3f &v1, const Vec3f &v2);
+

@@ -4,6 +4,13 @@
 
 Model::Model(std::string path) {
     LoadModel(path);
+    std::cout << "Load Model: " << path << std::endl;
+    for(auto& mesh: meshes){
+        auto vertex_num = mesh.GetVertexNum();
+        max_vertex_num = std::max(max_vertex_num, vertex_num);
+        total_vertex_num += vertex_num;
+        face_num += mesh.GetFaceNum();
+    }
 }
 
 TriangleMesh Model::ProcessMesh(aiMesh *mesh, const aiScene *scene) {
@@ -83,9 +90,34 @@ void Model::LoadModel(std::string path) {
 
     ProcessNode(scene->mRootNode, scene);
 
-    std::cout << "Load model done." << std::endl;
+    // std::cout << "Load model done." << std::endl;
 }
 
 std::vector<TriangleMesh> Model::GetMeshes() {
     return meshes;
+}
+
+void Model::SetShader(Shader *shader) {
+    assert(shader != nullptr);
+    this -> shader = shader;
+    // for(auto mesh: meshes){
+    //     mesh.SetShader(shader);
+    // }
+}
+
+Shader *Model::GetShader() {
+    assert(shader != nullptr);
+    return shader;
+}
+
+int Model::GetFaceNum() {
+    return face_num;
+}
+
+int Model::GetMaxVertexNum() {
+    return max_vertex_num;
+}
+
+int Model::GetTotalVertexNum() {
+    return total_vertex_num;
 }

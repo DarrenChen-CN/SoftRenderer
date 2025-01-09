@@ -1,3 +1,5 @@
+# find_package(OpenMP required)
+
 set(IMGUI_PATH ${PROJECT_SOURCE_DIR}/thirdparty/imgui)
 set(GLFW_PATH ${PROJECT_SOURCE_DIR}/thirdparty/glfw)
 set(GLAD_PATH ${PROJECT_SOURCE_DIR}/thirdparty/glad)
@@ -5,6 +7,10 @@ set(EIGEN_PATH ${PROJECT_SOURCE_DIR}/thirdparty/Eigen3)
 set(SRC_PATH ${PROJECT_SOURCE_DIR}/src)
 set(ASSIMP_PATH ${PROJECT_SOURCE_DIR}/thirdparty/assimp)
 set(STB_IMAGE_PATH ${PROJECT_SOURCE_DIR}/thirdparty/stb_image)
+
+set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -O3")
+
+set(CMAKE_CXX_STANDARD 17)
 
 include_directories(${IMGUI_PATH})
 include_directories(${GLFW_PATH}/include)

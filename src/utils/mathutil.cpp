@@ -39,6 +39,7 @@ Mat4f Translate(Vec3f v)
     res(0, 3) = v(0);
     res(1, 3) = v(1);
     res(2, 3) = v(2);
+    // std::cout << res << std::endl;
     return res;
 }
 
@@ -129,6 +130,22 @@ Mat4f GetPerspMatrix(float fovy, float aspect, float z_near, float z_far) {
     persp_to_ortho(3, 2) = 1;
 
     res = ortho * persp_to_ortho;
+    return res;
+}
+
+Vec3f Max(const Vec3f &v1, const Vec3f &v2) {
+    Vec3f res;
+    for(int i = 0; i < 3; i ++){
+        res(i) = std::max(v1(i), v2(i));
+    }
+    return res;
+}
+
+Vec3f Min(const Vec3f &v1, const Vec3f &v2) {
+    Vec3f res;
+    for(int i = 0; i < 3; i ++){
+        res(i) = std::min(v1(i), v2(i));
+    }
     return res;
 }
 

@@ -3,6 +3,7 @@
 
 #define eps 1e-6
 #define PI 3.1415926
+#define FLOATMAX 3.40282e+038
 
 typedef Eigen::Vector2i Vec2i;
 typedef Eigen::Vector2f Vec2f;

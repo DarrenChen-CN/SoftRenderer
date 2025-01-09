@@ -159,13 +159,17 @@ void Window::Init(){
 
 
 void Window::Show(){
-    glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    ImGui::Begin("CudaRayTracing");
+    ImGui::Begin("SoftRenderer");
+    ImGui::SetWindowPos(ImVec2(0, 0));
+    ImGui::SetWindowSize(ImVec2(400, 70));
+    ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+    ImGui::Text("total scene faces: %d, total rendering faces: %d", renderer -> GetTotalSceneFaces(), renderer -> GetTotalRenderingFaces());
     ImGui::End();
-    ImGui::Render();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // 复制framebuffer到pbo
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
@@ -192,10 +196,13 @@ void Window::Show(){
     glBindTexture(GL_TEXTURE_2D, screen_texture);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
     glfwSwapBuffers(window); 
     glfwSwapInterval(0); // 关闭垂直同步
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    glfwPollEvents();
 }
 
 void Window::Quit() {

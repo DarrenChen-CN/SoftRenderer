@@ -19,8 +19,8 @@ FrameBuffer::~FrameBuffer(){
 void FrameBuffer::Init(){
     assert(width > 0 && height > 0);
     framebuffer = new unsigned char[width * height * 3];
-    zbuffer = new float[width * height];
-    ClearZBuffer();
+    zbuffer = new ZBuffer(width, height);
+    hizbuffer = new HiZBuffer(width, height);
 
 }
 
@@ -57,19 +57,33 @@ void FrameBuffer::WriteBuffer(int x, int y, Vec3f color) {
     framebuffer[3 * (y * width + x) + 2] = color(2);
 }
 
-void FrameBuffer::ClearZBuffer() {
-    assert(zbuffer != nullptr);
-    for(int i = 0; i < width * height; i ++)zbuffer[i] = -1; // 在ndc空间使用zbuffer 最远为-1
-}
-
 bool FrameBuffer::WriteZBuffer(int x, int y, float depth) {
-    assert(zbuffer != nullptr);
     if(x < 0 || x >= width || y < 0 || y >= height)return false;
-    y = height - y - 1;
-    int pos = y * width + x;
-    if(zbuffer[pos] < depth){
-        zbuffer[pos] = depth;
-        return true;
+    if(hsrtype == ZBUFFER){
+        assert(zbuffer != nullptr);
+        return zbuffer -> WriteZBuffer(x, y, depth);
+    }else if(hsrtype == HIZBUFFER || hsrtype == BVHHIZBUFFER){
+        assert(hizbuffer != nullptr);
+        return hizbuffer -> WirteZBuffer(x, y, depth);
     }
     return false;
+}
+
+bool FrameBuffer::Reject(Bounds2 triangle_bound) {
+    assert(hizbuffer != nullptr);
+    return hizbuffer -> Reject(triangle_bound);
+}
+
+void FrameBuffer::CleaZBuffer() {
+    if(hsrtype == ZBUFFER){
+        assert(zbuffer != nullptr);
+        return zbuffer -> Clear();
+    }else if(hsrtype == HIZBUFFER || hsrtype == BVHHIZBUFFER){
+        assert(hizbuffer != nullptr);
+        return hizbuffer -> Clear();
+    }
+}
+
+void FrameBuffer::SetHSRType(HiddenSufaceRemovalType type) {
+    hsrtype = type;
 }

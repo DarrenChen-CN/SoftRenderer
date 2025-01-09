@@ -39,6 +39,9 @@ public:
     Mat4f projection = Mat4f::Identity();
     Mat4f viewport = Mat4f::Identity();
 
+    Vec3f light_pos = Vec3f(1, 1, 1);
+    Vec3f light_color = Vec3f(255, 255, 255);
+
     Texture *texture = nullptr;
 };
 
