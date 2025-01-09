@@ -97,7 +97,7 @@ public:
         // 1 (v1 -> v0)
         x = vs_output[1].screen_position(0);
         dx = 1.f * (vs_output[0].screen_position(0) - vs_output[1].screen_position(0)) / (vs_output[1].screen_position(1) - vs_output[0].screen_position(1));
-        dy = ((int)vs_output[1].screen_position(1) - (int)vs_output[0].screen_position(1));;
+        dy = ((int)vs_output[1].screen_position(1) - (int)vs_output[0].screen_position(1));
         // std::cout << vs_output[1].screen_position(1) << " " << vs_output[0].screen_position(1) << " " << dy << std::endl;
         res.push_back({x, dx, dy, id, vs_output[1].screen_position(1), vs_output[1], vs_output[0]});
         // 2（v2 -> v0）

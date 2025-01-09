@@ -46,7 +46,7 @@ int main(void){
     bunny_shader.SetArgs(&bunny_args);
     bunny.SetShader(&bunny_shader);
     
-    scale = Scale(Vec3f(1.5, 1.5, 1.5));
+    scale = Scale(Vec3f(1.0, 1.0, 1.0));
     // translate = Translate(Vec3f(0.4, -0.0, -0.0));
     translate = Translate(Vec3f(0.4, -0.0, -0.3));
     head_args.viewport = GetViewPortMatrix(0, 0, width, height);

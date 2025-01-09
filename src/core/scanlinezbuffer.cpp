@@ -26,17 +26,18 @@ void ScanLineZBuffer::Init(int id, std::vector<ScanLineTriangleInfo> &tris){
     this -> tris = tris;
 
     // std::cout << classified_triangle_table.size();
-
+    int faces = 0;
     for(ScanLineTriangleInfo &tri: tris){
         if(tri.x_min < 0 || tri.y_min < 0 || tri.x_max >= width || tri.y_max >= height)continue;
+        faces ++;
         classified_triangle_table[tri.y_max].push_back({tri.id, tri.dy, tri.y_max});
         // std::cout << 111 << std::endl;
         auto edges = tri.GetEdges();
         for(ClassifiedEdge &edge: edges){
-            // std::cout << edge.y_max << std::endl;
             classified_edge_table[edge.y_max].push_back(edge);
         }
     }
+    std::cout << faces << std::endl;
 }
 
 void ScanLineZBuffer::Scan(unsigned char *framebuffer){
@@ -45,6 +46,7 @@ void ScanLineZBuffer::Scan(unsigned char *framebuffer){
 
     // 从上往下扫描
     // std::cout << classified_triangle_table.size() << std::endl;
+    int faces = 0;
     for(int i = height - 1; i >= 0; i --){
         // std::cout << 111 << std::endl;
         // 重置zbuffer
@@ -54,6 +56,7 @@ void ScanLineZBuffer::Scan(unsigned char *framebuffer){
         for(auto &classified_triangle: classified_triangle_table[i]){
             // std::cout << 111 << std::endl;
             active_triangle_table.push_back({classified_triangle.id, classified_triangle.dy});
+            faces++;
             // 将相关边加入活化边表
             // 找到顶点在此处的两条边
             ClassifiedEdge e1, e2;
@@ -74,10 +77,23 @@ void ScanLineZBuffer::Scan(unsigned char *framebuffer){
 
         // 遍历活化边对 进行光栅化
         for(auto &active_edge: active_edge_table){
+            // if(active_edge.xl > active_edge.xr)std::cout << active_edge.xl << " " << active_edge.xr << std::endl;
+            // 确定左右边顺序正确
+            if(active_edge.xl > active_edge.xr){
+                std::swap(active_edge.xl, active_edge.xr);
+                std::swap(active_edge.dxl, active_edge.dxr);
+                std::swap(active_edge.dyl, active_edge.dyr);
+                std::swap(active_edge.l_vs_output[0], active_edge.r_vs_output[0]);
+                std::swap(active_edge.l_vs_output[1], active_edge.r_vs_output[1]);
+            }
             // 插值得到两个边界点的属性
-            float left_factor = (active_edge.l_vs_output[0].screen_position(0) - active_edge.xl) / (active_edge.l_vs_output[0].screen_position(0) - active_edge.l_vs_output[1].screen_position(0));
-            float right_factor = (active_edge.r_vs_output[0].screen_position(0) - active_edge.xr) / (active_edge.r_vs_output[0].screen_position(0) - active_edge.r_vs_output[1].screen_position(0));
+            // float left_factor = (active_edge.l_vs_output[0].screen_position(0) - active_edge.xl) / (active_edge.l_vs_output[0].screen_position(0) - active_edge.l_vs_output[1].screen_position(0));
+            // float right_factor = (active_edge.r_vs_output[0].screen_position(0) - active_edge.xr) / (active_edge.r_vs_output[0].screen_position(0) - active_edge.r_vs_output[1].screen_position(0));
             // std::cout << left_factor << " " << right_factor << std::endl;
+            float left_factor = 1 - active_edge.dyl / (active_edge.l_vs_output[0].screen_position(1) - active_edge.l_vs_output[1].screen_position(1) + 0.5);
+            float right_factor = 1 - active_edge.dyr / (active_edge.r_vs_output[0].screen_position(1) - active_edge.r_vs_output[1].screen_position(1) + 0.5);
+            // std::cout << left_factor << " " << right_factor << std::endl;
+            // std::cout << std::endl;
             // std::cout << active_edge.xl << " " << active_edge.xr << std::endl;
             // std::cout << active_edge.l_vs_output[0].screen_position(1) << "  " << active_edge.l_vs_output[1].screen_position(1) << std::endl;
             // std::cout << active_edge.l_vs_output[0].screen_position(0) << "  " << active_edge.xl << " " << active_edge.l_vs_output[1].screen_position(0) << std::endl;
@@ -85,14 +101,14 @@ void ScanLineZBuffer::Scan(unsigned char *framebuffer){
             auto left = VertexShaderOutput::Lerp(active_edge.l_vs_output[0], active_edge.l_vs_output[1], left_factor);
             auto right = VertexShaderOutput::Lerp(active_edge.r_vs_output[0], active_edge.r_vs_output[1], right_factor);
             auto shader = tris[active_edge.id].shader;
-            int len = right.screen_position(0) - left.screen_position(0) + 0.5;
+            int len = right.screen_position(0) - left.screen_position(0) + 1.5;
             for(int j = 0; j < len; j ++){
                 VertexShaderOutput v = VertexShaderOutput::Lerp(left, right, j * 1.f / len);
                 int x = v.screen_position(0) - 0.5;
-                int y = v.screen_position(1) - 0.5;
+                int y = i;
+                // std::cout << y << " " << i << std::endl;
                 if(!WriteZBuffer(x, y, v.screen_position(2)))continue;
                 Vec3f color = shader -> FragmentShader(v);
-                if(x < 0 || x >= width || y < 0 || y >= height)continue ;
                 y = height - y - 1;
                 // std::cout << x << " " << y << std::endl;
                 // std::cout << x << " " << y << std: endl;
@@ -145,26 +161,29 @@ void ScanLineZBuffer::Scan(unsigned char *framebuffer){
                     }
                 }
                 // std::cout << find << std::endl;
-                assert(find == true);
+                // assert(find == true);
                 UpdateActiveEdge(active_edge, e); 
+                // std::cout << active_edge.dyl << " " << active_edge.dyr << std::endl;
+                // if(active_edge.xl > active_edge.xr)std::cout << active_edge.xl << " " << active_edge.xr << std::endl;
             }
         }
 
         // std::cout << 444 << std::endl;
     }
+    // std::cout << faces << std::endl;
 }
 
 bool ScanLineZBuffer::WriteZBuffer(int x, int y, float depth){
     if(x < 0 || y < 0 || x >= width || y >= height)return false;
     int pos = x;
-    if(z_buffer[pos]> depth)return false; // 不需要修改
+    if(z_buffer[pos] > depth)return false; // 不需要修改
     z_buffer[pos] = depth;
     return true;
 }
 
 ActiveEdge ScanLineZBuffer::GetActiveEdge(ClassifiedEdge e1, ClassifiedEdge e2){
-    if(e1.x > e2.x)return GetActiveEdge(e2, e1);
-
+    // if(e1.dx > e2.dx)return GetActiveEdge(e2, e1);
+    // 左右在此无所谓 在实际光栅化时会判断左右
     ActiveEdge res;
     int id = e1.id;
     float xl, xr;
@@ -174,13 +193,13 @@ ActiveEdge ScanLineZBuffer::GetActiveEdge(ClassifiedEdge e1, ClassifiedEdge e2){
     float dzx, dzy;
 
     xl = e1.x, xr = e2.x;
-    dxl = e1.dx, dxl = e2.dx;
+    dxl = e1.dx, dxr = e2.dx;
     dyl = e1.dy, dyr = e2.dy;
     zl = e1.vs_output[0].screen_position(2);
     dzx = (e2.vs_output[0].screen_position(2) - e1.vs_output[0].screen_position(2)) / (xr - xl);
     dzy = (e1.vs_output[1].screen_position(2) - e1.vs_output[0].screen_position(2)) / e1.dy;
 
-    std::cout << xl << " " << dxl << " " << e1.vs_output[0].screen_position(0) << " " << e1.vs_output[1].screen_position(0) << std::endl;
+    // std::cout << xl << " " << dxl << " " << e1.vs_output[0].screen_position(0) << " " << e1.vs_output[1].screen_position(0) << std::endl;
 
     res = {xl, xr, dxl, dxr, dyl, dyr, zl, dzx, dzy, id};
     res.l_vs_output[0] = e1.vs_output[0], res.l_vs_output[1] = e1.vs_output[1];
@@ -192,7 +211,7 @@ ActiveEdge ScanLineZBuffer::GetActiveEdge(ClassifiedEdge e1, ClassifiedEdge e2){
 void ScanLineZBuffer::UpdateActiveEdge(ActiveEdge &active_edge, ClassifiedEdge e){
     float x = e.x;
     float dx = e.dx;
-    int dy = e.dy;
+    int dy = e.dy - 1;
     if(active_edge.dyl < 0){
         active_edge.xl = x;
         active_edge.dxl = dx;
@@ -203,6 +222,14 @@ void ScanLineZBuffer::UpdateActiveEdge(ActiveEdge &active_edge, ClassifiedEdge e
         active_edge.dxr = dx;
         active_edge.dyr = dy;
         active_edge.r_vs_output[0] = e.vs_output[0], active_edge.r_vs_output[1] = e.vs_output[1];
+    }
+
+    if(active_edge.xl > active_edge.xr){
+        std::swap(active_edge.xl, active_edge.xr);
+        std::swap(active_edge.dxl, active_edge.dxr);
+        std::swap(active_edge.dyl, active_edge.dyr);
+        std::swap(active_edge.l_vs_output[0], active_edge.r_vs_output[0]);
+        std::swap(active_edge.l_vs_output[1], active_edge.r_vs_output[1]);
     }
 }
 
