@@ -19,7 +19,7 @@ public:
     void Clear(QuadNode *node);
 private:
     int width, height;
-    QuadNode* z_buffer;
-    QuadNode* z_pyramid;
+    QuadNode* z_buffer = nullptr;
+    QuadNode* z_pyramid = nullptr;
 
 };

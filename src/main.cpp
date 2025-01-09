@@ -23,6 +23,7 @@ int main(void){
     renderer->SetHSRType(ZBUFFER);
     renderer->SetHSRType(HIZBUFFER);
     renderer->SetHSRType(BVHHIZBUFFER);
+    renderer -> SetHSRType(SCANLINE);
     Window *window = new Window(width, height);
     window -> BindRenderer(renderer);
 
@@ -63,8 +64,8 @@ int main(void){
     head2_args.projection = GetPerspMatrix(fovy, aspect, z_near, z_far);
     head2_shader.SetArgs(&head2_args);
     head2.SetShader(&head2_shader);
-    scene.AddModel(bunny);
-    scene.AddModel(head2);
+    // scene.AddModel(bunny);
+    // scene.AddModel(head2);
     scene.AddModel(head);
     
     

@@ -41,8 +41,6 @@ void Renderer::RenderingTriangle(Triangle &triangle, Shader* shader, VertexShade
     v[2] = vs_outputs[triangle.GetIndex(2)];
 
     RenderingTriangle(v, shader);
-
-    
 }
 
 void Renderer::RenderingTriangle(VertexShaderOutput v[3], Shader *shader) {
@@ -174,6 +172,7 @@ int Renderer::RenderingTriangleMesh(TriangleMesh &mesh, Shader *shader) {
 }
 
 void Renderer::RenderingScene(Scene *scene) {
+    assert(scene != nullptr);
     total_scene_faces = scene->GetFaceNum();
     int scene_total_vertex_num = scene -> GetTotalVertexNum();
     if(scene_total_vertex_num > max_vertex_num){
@@ -189,6 +188,8 @@ void Renderer::RenderingScene(Scene *scene) {
             total_rendering_faces += RenderingModel(model);
         }
         this -> total_rendering_faces = total_rendering_faces;
+    }else{
+        this -> total_rendering_faces = ScanLineRenderingScene(scene);
     }
     
 }
@@ -260,6 +261,43 @@ int Renderer::BVHRenderingScene(Scene *scene) {
         
     }
     return faces;
+}
+
+int Renderer::ScanLineRenderingScene(Scene *scene){
+    // 判断是否需要初始化
+    int scene_id = framebuffer -> ScanLineSceneId();
+    if(scene -> id != scene_id){
+        std::vector<ScanLineTriangleInfo> triangle_info(scene->GetFaceNum()); 
+        // 先对所有顶点进行坐标变换 并组装三角形
+        int vertex_offset = 0, face_offset = 0;
+        auto models = scene->GetModels();
+        for(auto &model: models){
+            auto meshes = model.GetMeshes();
+            auto shader = model.GetShader();
+            assert(shader != nullptr);
+            for(auto &mesh: meshes){
+                auto indices = mesh.GetIndices();
+                auto face_num = mesh.GetFaceNum();
+                auto vertices = mesh.GetVertices();
+                // 顶点着色器
+                for(int i = 0; i < vertices.size(); i ++){
+                    auto v = vertices[i];
+                    vs_outputs[i + vertex_offset] = shader -> VertexShader(v);
+                }
+                // 组装三角形
+                for(int i = 0; i < face_num; i ++){
+                    triangle_info[i + face_offset] = {i + face_offset, vs_outputs[indices[3 * i] + vertex_offset], vs_outputs[indices[3 * i + 1] + vertex_offset], vs_outputs[indices[3 * i + 2] + vertex_offset], shader};
+                    // std::cout << triangle_info[i + face_offset].bounds.p_min << std::endl;
+                }
+                vertex_offset += vertices.size();
+                face_offset += face_num;
+            }
+        }
+        framebuffer -> ScanLineInit(scene -> id, triangle_info);
+    }
+    // std::cout << 111 << std::endl;
+    framebuffer -> Scan();
+    return scene->GetFaceNum();
 }
 
 bool Renderer::BackFaceCulling(VertexShaderOutput &v1, VertexShaderOutput &v2, VertexShaderOutput &v3) {

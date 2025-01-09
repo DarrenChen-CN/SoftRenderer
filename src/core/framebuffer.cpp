@@ -14,14 +14,16 @@ FrameBuffer::FrameBuffer(int width, int height):width(width), height(height){
 FrameBuffer::~FrameBuffer(){
     if(framebuffer != nullptr)delete[] framebuffer;
     if(zbuffer != nullptr)delete[] zbuffer;
+    if(hi_zbuffer != nullptr)delete hi_zbuffer;
+    if(scanline_zbuffer != nullptr)delete scanline_zbuffer;
 }
 
 void FrameBuffer::Init(){
     assert(width > 0 && height > 0);
     framebuffer = new unsigned char[width * height * 3];
     zbuffer = new ZBuffer(width, height);
-    hizbuffer = new HiZBuffer(width, height);
-
+    hi_zbuffer = new HiZBuffer(width, height);
+    scanline_zbuffer = new ScanLineZBuffer(width, height);
 }
 
 unsigned char * FrameBuffer::GetFrameBuffer(){
@@ -63,15 +65,15 @@ bool FrameBuffer::WriteZBuffer(int x, int y, float depth) {
         assert(zbuffer != nullptr);
         return zbuffer -> WriteZBuffer(x, y, depth);
     }else if(hsrtype == HIZBUFFER || hsrtype == BVHHIZBUFFER){
-        assert(hizbuffer != nullptr);
-        return hizbuffer -> WirteZBuffer(x, y, depth);
+        assert(hi_zbuffer != nullptr);
+        return hi_zbuffer -> WirteZBuffer(x, y, depth);
     }
     return false;
 }
 
 bool FrameBuffer::Reject(Bounds2 triangle_bound) {
-    assert(hizbuffer != nullptr);
-    return hizbuffer -> Reject(triangle_bound);
+    assert(hi_zbuffer != nullptr);
+    return hi_zbuffer -> Reject(triangle_bound);
 }
 
 void FrameBuffer::CleaZBuffer() {
@@ -79,11 +81,29 @@ void FrameBuffer::CleaZBuffer() {
         assert(zbuffer != nullptr);
         return zbuffer -> Clear();
     }else if(hsrtype == HIZBUFFER || hsrtype == BVHHIZBUFFER){
-        assert(hizbuffer != nullptr);
-        return hizbuffer -> Clear();
+        assert(hi_zbuffer != nullptr);
+        return hi_zbuffer -> Clear();
+    }else {
+        // scanline 扫描前会clear
+        return;
     }
 }
 
 void FrameBuffer::SetHSRType(HiddenSufaceRemovalType type) {
     hsrtype = type;
+}
+
+void FrameBuffer::ScanLineInit(int id, std::vector<ScanLineTriangleInfo> &tris){
+    assert(scanline_zbuffer != nullptr);
+    scanline_zbuffer -> Init(id, tris);
+}
+
+int FrameBuffer::ScanLineSceneId(){
+    assert(scanline_zbuffer != nullptr);
+    return scanline_zbuffer -> GetSceneID();
+}
+
+void FrameBuffer::Scan(){
+    assert(scanline_zbuffer != nullptr);
+    scanline_zbuffer -> Scan(framebuffer);
 }

@@ -37,6 +37,7 @@ private:
 
     int RenderingModel(Model &model);
     int RenderingTriangleMesh(TriangleMesh &mesh, Shader *shader); // 返回值为渲染的面片数
+    int ScanLineRenderingScene(Scene *scene); // 使用scanline zbuffer渲染场景
     int BVHRenderingScene(Scene *scene); // 使用BVHHiZBuffer渲染场景
     void RenderingTriangle(Triangle &triangle, Shader *shader, VertexShaderOutput* vs_outputs); // 扫描线填充算法
     void RenderingTriangle(VertexShaderOutput v[3], Shader *shader);

@@ -23,7 +23,7 @@ include_directories(utils)
 
 link_directories(${ASSIMP_PATH}/lib)
 
-message(${GLAD_PATH}/glad.c)
+# message(${GLAD_PATH}/glad.c)
 
 file(GLOB GLAD_SRC ${GLAD_PATH}/glad.c)
 file(GLOB IMGUI_SRC ${IMGUI_PATH}/*.cpp)

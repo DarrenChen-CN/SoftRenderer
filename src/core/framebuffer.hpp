@@ -2,7 +2,7 @@
 #include "define.hpp"
 #include "hizbuffer.hpp"
 #include "zbuffer.hpp"
-
+#include "scanlinezbuffer.hpp"
 enum HiddenSufaceRemovalType{ZBUFFER, HIZBUFFER, BVHHIZBUFFER, SCANLINE};
 
 class FrameBuffer{
@@ -24,11 +24,15 @@ public:
 
     // hizbuffer 接口
     bool Reject(Bounds2 triangle_bound);
-    // bool WriteHiZBuffer(int x, int y, float depth);
-
-    
 
     void SetHSRType(HiddenSufaceRemovalType hsrtype);
+
+    // scanline zbuffer接口
+    void ScanLineInit(int id, std::vector<ScanLineTriangleInfo> &tris);
+    int ScanLineSceneId();
+    void Scan();
+
+
 
 private:
     int width = 800, height = 600;
@@ -37,5 +41,6 @@ private:
     HiddenSufaceRemovalType hsrtype = ZBUFFER;
 
     ZBuffer *zbuffer = nullptr;
-    HiZBuffer *hizbuffer = nullptr;
+    HiZBuffer *hi_zbuffer = nullptr;
+    ScanLineZBuffer *scanline_zbuffer = nullptr;
 };
