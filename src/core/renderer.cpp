@@ -274,6 +274,7 @@ int Renderer::BVHRenderingScene(Scene *scene) {
 int Renderer::ScanLineRenderingScene(Scene *scene){
     // 判断是否需要初始化
     int scene_id = framebuffer -> ScanLineSceneId();
+    // std::cout << scene_id << " " << scene -> id << std::endl;
     if(scene -> id != scene_id){
         std::vector<ScanLineTriangleInfo> triangle_info(scene->GetFaceNum()); 
         // 先对所有顶点进行坐标变换 并组装三角形
@@ -300,7 +301,7 @@ int Renderer::ScanLineRenderingScene(Scene *scene){
                 face_offset += face_num;
             }
         }
-        framebuffer -> ScanLineInit(scene -> id, triangle_info);
+        framebuffer -> ScanLineInit(scene_id, triangle_info);
     }
     // std::cout << 111 << std::endl;
     framebuffer -> Scan();

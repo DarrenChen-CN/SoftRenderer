@@ -9,8 +9,8 @@ set(ASSIMP_PATH ${PROJECT_SOURCE_DIR}/thirdparty/assimp)
 set(STB_IMAGE_PATH ${PROJECT_SOURCE_DIR}/thirdparty/stb_image)
 
 set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -O3")
-
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_BUILD_TYPE "Release")
 
 include_directories(${IMGUI_PATH})
 include_directories(${GLFW_PATH}/include)
