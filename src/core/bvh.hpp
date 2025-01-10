@@ -88,11 +88,6 @@ private:
     int scene_id; // 场景的id
 
     BVHNode *RecursiveBuild(std::vector<BVHTriangleInfo> &triangle_info, int start, int end, std::vector<BVHTriangleInfo> &ordered_prims){
-        // std::cout << triangle_info.size() << std::endl;
-        // for(int i = 0; i < triangle_info.size(); i ++){
-        //     std::cout << 111 << std::endl;
-        //     std::cout << triangle_info[i].bounds.p_min << std::endl;
-        // }
         BVHNode* node = new BVHNode();
         // 计算所有元素包围盒
         Bounds3 bounds;
@@ -111,12 +106,6 @@ private:
             std::nth_element(&triangle_info[start], &triangle_info[mid], &triangle_info[end - 1] + 1, [](const BVHTriangleInfo &a, const BVHTriangleInfo &b){
                 return a.bounds.max_z > b.bounds.max_z;
             });// 对中间位置排序
-            // float zmid = bounds.center(2);
-            // auto midptr = std::partition(&triangle_info[start], &triangle_info[end - 1] + 1, [zmid](const BVHTriangleInfo &p){
-            //     return p.bounds.center(2) < zmid;
-            // });
-            // int mid = midptr - &triangle_info[0];
-            // std::cout << start << " " << mid << " " << end << std::endl;
             node -> InitInterior(RecursiveBuild(triangle_info, start, mid, ordered_prims), RecursiveBuild(triangle_info, mid, end, ordered_prims));
         }
         return node;

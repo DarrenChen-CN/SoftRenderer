@@ -4,8 +4,6 @@
 #include "shader.hpp"
 #include <algorithm>
 #include <iostream>
-// #include "framebuffer.hpp"
-class FrameBuffer;
 
 // 分类多边形（只支持三角形）
 class ClassifiedTriangle{
@@ -42,7 +40,6 @@ public:
 
     int id; // 三角形编号
     int dy; // 多边形跨越的 剩余 扫描线数目
-    // int y; // 交点y坐标
 
 };
 
@@ -98,7 +95,6 @@ public:
         x = vs_output[1].screen_position(0);
         dx = 1.f * (vs_output[0].screen_position(0) - vs_output[1].screen_position(0)) / (vs_output[1].screen_position(1) - vs_output[0].screen_position(1));
         dy = ((int)vs_output[1].screen_position(1) - (int)vs_output[0].screen_position(1));
-        // std::cout << vs_output[1].screen_position(1) << " " << vs_output[0].screen_position(1) << " " << dy << std::endl;
         res.push_back({x, dx, dy, id, vs_output[1].screen_position(1), vs_output[1], vs_output[0]});
         // 2（v2 -> v0）
         x = vs_output[2].screen_position(0);

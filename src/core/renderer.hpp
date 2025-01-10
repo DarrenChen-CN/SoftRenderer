@@ -15,11 +15,15 @@ public:
     ~Renderer();
     void BindFramebuffer(FrameBuffer *framebuffer);
     unsigned char *GetFrameBuffer();
-    void RenderingScene(Scene *scene);
     void SetHSRType(HiddenSufaceRemovalType type);
     int GetTotalRenderingFaces();
     int GetTotalSceneFaces();
     void ClearZBuffer();
+    void Rendering();
+    void AddScene(Scene *scene);
+    void SetSceneID(int id);
+    void ClearFrameBuffer();
+    void SetBackFaceCulling(bool flag);
 
 private:
     FrameBuffer *framebuffer = nullptr;
@@ -32,9 +36,15 @@ private:
 
     HiddenSufaceRemovalType hsrtype = ZBUFFER;
 
+    std::vector<Scene *> scene_list;
+    int this_scene = 0; // 正在渲染的场景
+
+    bool back_face_culling = false;
+
     void WriteBuffer(int x, int y, Vec3f color);
     bool WriteZBuffer(int x, int y, float depth);
 
+    void RenderingScene(Scene *scene);
     int RenderingModel(Model &model);
     int RenderingTriangleMesh(TriangleMesh &mesh, Shader *shader); // 返回值为渲染的面片数
     int ScanLineRenderingScene(Scene *scene); // 使用scanline zbuffer渲染场景

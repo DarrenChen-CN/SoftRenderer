@@ -4,7 +4,7 @@
 class Scene{
 public:
     Scene();
-    int AddModel(Model &model); // 返回索引
+    int AddModel(Model model); // 返回索引
     Model &GetModel(int id);
     std::vector<Model> GetModels();
     int GetModelNum();

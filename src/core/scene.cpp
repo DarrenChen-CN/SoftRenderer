@@ -6,14 +6,13 @@ Scene::Scene(){
     scene_id = id++;
 }
 
-int Scene::AddModel(Model &model) {
+int Scene::AddModel(Model model) {
     int res = model_num;
     models.push_back(model);
     model_num++;
     face_num += model.GetFaceNum();
     max_vertex_num = std::max(max_vertex_num, model.GetMaxVertexNum());
     total_vertex_num += model.GetTotalVertexNum();
-    // std::cout << max_vertex_num << " " << total_vertex_num << std::endl;
     return res;
 }
 

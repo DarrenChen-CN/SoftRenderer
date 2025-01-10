@@ -115,7 +115,6 @@ void Renderer::DownTriangle(VertexShaderOutput &v1, VertexShaderOutput &v2, Vert
 void Renderer::ScanLine(VertexShaderOutput &left, VertexShaderOutput &right, Shader *shader){
     assert(shader != nullptr);
     int len = right.screen_position(0) - left.screen_position(0) + 0.5;
-    // std::cout << left.screen_position << std::endl;
     for(int i = 0; i < len; i ++){
         VertexShaderOutput v = VertexShaderOutput::Lerp(left, right, i * 1.f / len);
         int x = v.screen_position(0) - 0.5;
@@ -138,6 +137,10 @@ void Renderer::ClearZBuffer() {
     framebuffer -> CleaZBuffer();
 }
 
+void Renderer::ClearFrameBuffer() {
+    framebuffer -> ClearBuffer();
+}
+
 int Renderer::RenderingTriangleMesh(TriangleMesh &mesh, Shader *shader) {
     float start, end;
     // auto shader = mesh.GetShader();
@@ -156,9 +159,12 @@ int Renderer::RenderingTriangleMesh(TriangleMesh &mesh, Shader *shader) {
     for(int i = 0; i < face_num; i ++){
         Triangle tri(i, indices[3 * i], indices[3 * i + 1], indices[3 * i + 2], &mesh);
         // 背面剔除
-        // int idx0 = tri.GetIndex(0), idx1 = tri.GetIndex(1), idx2 = tri.GetIndex(2);
-        // bool flag = BackFaceCulling(vs_outputs[idx0], vs_outputs[idx1], vs_outputs[idx2]);
-        // if(flag)continue;
+        if(back_face_culling){
+            int idx0 = tri.GetIndex(0), idx1 = tri.GetIndex(1), idx2 = tri.GetIndex(2);
+            bool flag = BackFaceCulling(vs_outputs[idx0], vs_outputs[idx1], vs_outputs[idx2]);
+            if(flag)continue;
+        }
+
         // HiZ
         if(hsrtype == HIZBUFFER){
             // Bounds2d triangle_bound(vs_outputs[tri.GetIndex(0)].screen_position, vs_outputs[tri.GetIndex(1)].screen_position, vs_outputs[tri.GetIndex(2)].screen_position);
@@ -250,8 +256,10 @@ int Renderer::BVHRenderingScene(Scene *scene) {
         
         auto triangle_info = triangles_info[leaf_nodes[i] -> triangle_offset];
         // 背面剔除
-        // bool flag = BackFaceCulling(triangle_info.vs_output[0], triangle_info.vs_output[1], triangle_info.vs_output[2]);
-        // if(flag)continue;
+        if(back_face_culling){
+            bool flag = BackFaceCulling(triangle_info.vs_output[0], triangle_info.vs_output[1], triangle_info.vs_output[2]);
+            if(flag)continue;
+        }
         // HiZ
         Bounds2 triangle_bound(triangle_info.vs_output[0].screen_position, triangle_info.vs_output[1].screen_position, triangle_info.vs_output[2].screen_position);
         if(framebuffer -> Reject(triangle_bound))continue;
@@ -287,7 +295,6 @@ int Renderer::ScanLineRenderingScene(Scene *scene){
                 // 组装三角形
                 for(int i = 0; i < face_num; i ++){
                     triangle_info[i + face_offset] = {i + face_offset, vs_outputs[indices[3 * i] + vertex_offset], vs_outputs[indices[3 * i + 1] + vertex_offset], vs_outputs[indices[3 * i + 2] + vertex_offset], shader};
-                    // std::cout << triangle_info[i + face_offset].bounds.p_min << std::endl;
                 }
                 vertex_offset += vertices.size();
                 face_offset += face_num;
@@ -298,6 +305,11 @@ int Renderer::ScanLineRenderingScene(Scene *scene){
     // std::cout << 111 << std::endl;
     framebuffer -> Scan();
     return scene->GetFaceNum();
+}
+
+void Renderer::Rendering() {
+    assert(scene_list.size() > 0 && scene_list.size() > this_scene);
+    RenderingScene(scene_list[this_scene]);
 }
 
 bool Renderer::BackFaceCulling(VertexShaderOutput &v1, VertexShaderOutput &v2, VertexShaderOutput &v3) {
@@ -321,4 +333,16 @@ int Renderer::GetTotalRenderingFaces() {
 
 int Renderer::GetTotalSceneFaces() {
     return total_scene_faces;
+}
+
+void Renderer::AddScene(Scene *scene) {
+    scene_list.push_back(scene);
+}
+
+void Renderer::SetSceneID(int id) {
+    this -> this_scene = id;
+}
+
+void Renderer::SetBackFaceCulling(bool flag) {
+    back_face_culling = flag;
 }

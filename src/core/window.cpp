@@ -164,10 +164,33 @@ void Window::Show(){
     ImGui::NewFrame();
     ImGui::Begin("SoftRenderer");
     ImGui::SetWindowPos(ImVec2(0, 0));
-    ImGui::SetWindowSize(ImVec2(400, 70));
+    ImGui::SetWindowSize(ImVec2(400, 140));
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("total scene faces: %d, total rendering faces: %d", renderer -> GetTotalSceneFaces(), renderer -> GetTotalRenderingFaces());
+    // 场景切换菜单
+    ImGui::Text("%s", "scene");
+    ImGui::SameLine();
+    const char* scene[5] = {"2k", "15k", "144k", "scene4", "scene5"};
+    static int current_scene = 0;
+    ImGui::SetNextItemWidth(100);
+    ImGui::Combo(" ", &current_scene, scene, IM_ARRAYSIZE(scene));
+    // std::cout << current_scene << std::endl;
+    renderer -> SetSceneID(current_scene);
+    // 消隐模式菜单
+    ImGui::Text("%s", "Hidden Surface Removal Type");
+    ImGui::SameLine();
+    const char* hsrtype[4] = {"zbuffer", "hizbuffer", "bvh-hizbuffer", "scanline-zbuffer"};
+    static int current_hsrtype = 0;
+    ImGui::SetNextItemWidth(100);
+    ImGui::Combo("  ", &current_hsrtype, hsrtype, IM_ARRAYSIZE(hsrtype));
+    renderer -> SetHSRType((HiddenSufaceRemovalType)current_hsrtype);
+    // 背面剔除选项
+    // ImGui::SameLine();
+    static bool back_face_culling = false;
+    ImGui::Checkbox(u8"back face culling", &back_face_culling);
+    renderer -> SetBackFaceCulling(back_face_culling);
     ImGui::End();
+    
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -178,6 +201,8 @@ void Window::Show(){
                                         width * height * 3,
                                         GL_MAP_WRITE_BIT |
                                         GL_MAP_INVALIDATE_BUFFER_BIT);
+
+    
 
     if(bufPtr){
         memcpy(bufPtr, renderer -> GetFrameBuffer(), static_cast<size_t>(width * height * 3));

@@ -18,6 +18,7 @@ public:
     void Init();
     unsigned char *GetFrameBuffer();
 
+    void ClearBuffer();
     void WriteBuffer(int x, int y, Vec3f color);
     void CleaZBuffer();
     bool WriteZBuffer(int x, int y, float depth); // 返回值表示是否修改zbuffer true为修改

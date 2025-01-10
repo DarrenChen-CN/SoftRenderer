@@ -52,8 +52,6 @@ void FrameBuffer::SetHeight(int height){
 void FrameBuffer::WriteBuffer(int x, int y, Vec3f color) {
     if(x < 0 || x >= width || y < 0 || y >= height)return ;
     y = height - y - 1;
-    // std::cout << x << " " << y << std::endl;
-    // std::cout << x << " " << y << std: endl;
     framebuffer[3 * (y * width + x)] = color(0);
     framebuffer[3 * (y * width + x) + 1] = color(1);
     framebuffer[3 * (y * width + x) + 2] = color(2);
@@ -87,6 +85,11 @@ void FrameBuffer::CleaZBuffer() {
         // scanline 扫描前会clear
         return;
     }
+}
+
+void FrameBuffer::ClearBuffer() {
+    memset(framebuffer, 0, sizeof(unsigned char) * width * height * 3);
+    // std::cout << 111 << std::endl;
 }
 
 void FrameBuffer::SetHSRType(HiddenSufaceRemovalType type) {
